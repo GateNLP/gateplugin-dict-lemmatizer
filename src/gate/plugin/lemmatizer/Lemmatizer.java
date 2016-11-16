@@ -24,23 +24,13 @@
  *  TfIdf: Simple PR to calculate count DF and TF and calculate TFIDF scores,
  *  with support for parallel processing.
  */
-package gate.plugin.corpusstats;
+package gate.plugin.lemmatizer;
 
 
 import gate.*;
 import gate.api.AbstractDocumentProcessor;
 import gate.creole.metadata.*;
-import gate.util.Benchmark;
 import gate.util.GateRuntimeException;
-import java.net.URL;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.DoubleAdder;
-import java.util.concurrent.atomic.LongAdder;
 
 @CreoleResource(name = "Lemmatizer",
         helpURL = "https://github.com/GateNLP/gateplugin-Lemmatizer/wiki/Lemmatizer",
@@ -178,11 +168,11 @@ public class Lemmatizer  extends AbstractDocumentProcessor {
     fireStatusChanged("Lemmatizer: running on " + document.getName() + "...");
     
     if (containingAnns == null) {
-      doIt(document,inputAnns)
+      doIt(document,inputAnns);
     } else {
       // do it for each containing annotation
       for (Annotation containingAnn : containingAnns) {
-        doIt(document,gate.Utils.getContainedAnnotations(inputAnns,containingAnn))
+        doIt(document,gate.Utils.getContainedAnnotations(inputAnns,containingAnn));
       }
     }
     
