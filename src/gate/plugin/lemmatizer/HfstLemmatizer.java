@@ -1,3 +1,22 @@
+/* 
+ * Copyright (C) 2015-2016 The University of Sheffield.
+ *
+ * This file is part of gateplugin-Lemmatizer
+ * (see https://github.com/GateNLP/gateplugin-Lemmatizer)
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation, either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software. If not, see <http://www.gnu.org/licenses/>.
+ */
 package gate.plugin.lemmatizer;
 
 import java.io.DataInputStream;
@@ -13,14 +32,11 @@ import net.sf.hfst.UnweightedTransducer;
 import net.sf.hfst.WeightedTransducer;
 
 /**
- *
- * @author ahmetaker
+ * A class representing the HFST lemmatizer transducer.
+ * 
+ * @author Ahmet Aker
+ * @author Johann Petrak
  */
-// TODO: need one static class to load the thing and one instance method
-// to get the lemma for a token string and a pos tag.
-// The method should probabl automatically check both the original case
-// and if nothing is found, the all lower case version
-// If still nothing found, return null
 public class HfstLemmatizer {
 
   private Transducer transducer = null;

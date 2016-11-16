@@ -1,8 +1,8 @@
 /* 
  * Copyright (C) 2015-2016 The University of Sheffield.
  *
- * This file is part of gateplugin-CorpusStats
- * (see https://github.com/johann-petrak/gateplugin-CorpusStats)
+ * This file is part of gateplugin-Lemmatizer
+ * (see https://github.com/GateNLP/gateplugin-Lemmatizer)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -19,11 +19,6 @@
  */
 
 
-/**
- * 
- *  TfIdf: Simple PR to calculate count DF and TF and calculate TFIDF scores,
- *  with support for parallel processing.
- */
 package gate.plugin.lemmatizer;
 
 
@@ -39,6 +34,12 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A PR to find lemmata for words.
+ * 
+ * @author Johann Petrak <johann.petrak@gmail.com>
+ * @author Achmet Aker 
+ */
 @CreoleResource(name = "Lemmatizer",
         helpURL = "https://github.com/GateNLP/gateplugin-Lemmatizer/wiki/Lemmatizer",
         comment = "Find the lemmata of words.")
