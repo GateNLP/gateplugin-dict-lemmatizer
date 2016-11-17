@@ -104,7 +104,7 @@ public abstract class AbstractDocumentProcessor
         System.err.println("DEBUG: creating first instance of PR "+this.getName());
         setNDuplicates(new AtomicInteger(0));
         setSharedData(new ConcurrentHashMap<String,Object>());
-        System.err.println("DEBUG: created duplicate 0 of PR "+this.getName());
+        System.err.println("DEBUG: created instance 0 of PR "+this.getName());
       } else {
         int thisn = getNDuplicates().addAndGet(1);
         duplicateId = thisn;

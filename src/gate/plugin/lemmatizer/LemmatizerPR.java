@@ -33,6 +33,7 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
 
 /**
  * A PR to find lemmata for words.
@@ -118,31 +119,31 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
   }
   private String posFeature = "category";
   
+  private String lemmaFeature = "lemma";
   
-
-  public enum Language {
-    ENGLISH("en"),
-    GERMAN("de"),
-    FRENCH("fr"),
-    SPANISH("es");
-    private Language(String code) {
-      this.code = code;
-    }
-    private String code;
-    public String getLangCode() { return code; }
+  @RunTime
+  @CreoleParameter(
+    comment = "The name of the feature that should contain the lemma, if any.",
+    defaultValue = "lemma"
+  )
+  public void setLemmaFeature(String val) {
+    lemmaFeature = val;
+  }
+  public String getLemmaFeature() {
+    return lemmaFeature;
   }
 
-
   
-  private Language language;
+  private String languageCode;
   @RunTime
   @CreoleParameter( 
-          comment = "The language to use."
+          comment = "The language code to use, e.g. en, de, fr",
+          defaultValue = "en"
   )
-  public void setLanguage(Language val) {
-    language = val;
+  public void setLanguageCode(String val) {
+    languageCode = val;
   }
-  public Language getLanguage() { return language; }
+  public String getLanguageCode() { return languageCode; }
   
   
   ////////////////////// FIELDS
@@ -155,6 +156,10 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
   
   String textFeatureToUse = "";
   String posFeatureToUse = "category";
+  String lemmaFeatureToUse = "lemma";
+  
+  String loadedDicts = "";
+  String loadedFst = "";
   
   HfstLemmatizer hfstLemmatizer = null;  // if null we do not have a FST
   
@@ -250,16 +255,15 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
         lemma = pronDic.get(tokenString.toLowerCase());
       }
       // TODO: replace with indicator of if we have a FST from the init phase
-      if (!"nl".equalsIgnoreCase(language.getLangCode()) && lemma == null) {
-        // lemma = hfstLemmatizer.getLemma(tokenString,pos);
+      if (!"nl".equalsIgnoreCase(languageCode) && lemma == null) {
+        lemma = hfstLemmatizer.getLemma(tokenString,pos);
       }
-    if (lemma == null || "".equals(lemma)) {
-      lemma = tokenString;
+      if (lemma == null || "".equals(lemma)) {
+        lemma = tokenString;
+      }
     }
+    fm.put(lemmaFeatureToUse, lemma);
   }
-  //// END
-
-}
   
 
   @Override
@@ -277,28 +281,47 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
       textFeatureToUse = textFeature;
     }
   
+    if(lemmaFeature == null || lemmaFeature.trim().isEmpty()) {
+      lemmaFeatureToUse = "lemma";
+    } else {
+      lemmaFeatureToUse = lemmaFeature;
+    }
+    
     ResourceData myResourceData =
-        Gate.getCreoleRegister().get("gate.plugin.lemmatizer.Lemmatizer");
+        Gate.getCreoleRegister().get(this.getClass().getName());
     java.net.URL creoleXml = myResourceData.getXmlFileUrl();
     File pluginDir = gate.util.Files.fileFromURL(creoleXml).getParentFile();
     File resourcesDir = new File(pluginDir,"resources");
-    File dictDir = new File(new File(resourcesDir,"dictionaries"),language.getLangCode());
-    nounDic = loadDictionary(new File(dictDir,"nounDic.txt"));
-    adjDic = loadDictionary(new File(dictDir,"adjDic.txt"));
-    advDic = loadDictionary(new File(dictDir,"advDic.txt"));
-    verbDic = loadDictionary(new File(dictDir,"verbDic.txt"));
-    detDic = loadDictionary(new File(dictDir,"detDic.txt"));
-    pronDic = loadDictionary(new File(dictDir,"pronounDic.txt"));
+    File dictDir = new File(new File(resourcesDir,"dictionaries"),languageCode);
+    if(!dictDir.exists()) {
+      throw new GateRuntimeException("No dictionaries found for language "+languageCode);
+    }
+    if(!loadedDicts.equals(languageCode)) {
+      System.err.println("Lemmatizer: loading dictionaries for "+languageCode);
+      nounDic = loadDictionary(new File(dictDir,"nounDic.txt.gz"));
+      adjDic = loadDictionary(new File(dictDir,"adjDic.txt.gz"));
+      advDic = loadDictionary(new File(dictDir,"advDic.txt.gz"));
+      verbDic = loadDictionary(new File(dictDir,"verbDic.txt.gz"));
+      detDic = loadDictionary(new File(dictDir,"detDic.txt.gz"));
+      pronDic = loadDictionary(new File(dictDir,"pronounDic.txt.gz"));
+      System.err.println("Lemmatizer: dictionaries loaded");
+      loadedDicts = languageCode;
+    }
     
     // Load the hfst lemmatizer if it exists for the language, otherwise
     // the hfstLemmatizer variable remains null
     File lemmatizerDir = new File(resourcesDir,"lemmaModels");
-    File lemmatizerFile = new File(lemmatizerDir,language.getLangCode()+".hfst.ol");
+    File lemmatizerFile = new File(lemmatizerDir,languageCode+".hfst.ol");
     if(lemmatizerFile.exists()) {
-      try {
-        hfstLemmatizer = HfstLemmatizer.load(lemmatizerFile,language.getLangCode());
-      } catch (Exception ex) {
-        throw new GateRuntimeException("Could not load lemmatization transducer "+lemmatizerFile,ex);
+      if(!loadedFst.equals(languageCode)) {
+        try {
+          System.err.println("Lemmatizer: loading HFST model for "+languageCode);
+          hfstLemmatizer = HfstLemmatizer.load(lemmatizerFile,languageCode);
+          System.err.println("Lemmatizer: HFST model loaded");
+        } catch (Exception ex) {
+          throw new GateRuntimeException("Could not load lemmatization transducer "+lemmatizerFile,ex);
+        }
+        loadedFst = languageCode;
       }
     } else {
       hfstLemmatizer = null;
@@ -321,7 +344,10 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
     BufferedReader in = null;
     try {
       Map<String, String> map = new HashMap<String, String>();
-      in = new BufferedReader(new InputStreamReader(new FileInputStream(dictFile), "UTF-8"));
+      in = new BufferedReader(
+              new InputStreamReader(
+                      new GZIPInputStream(
+                              new FileInputStream(dictFile)), "UTF-8"));
       String str;
       while ((str = in.readLine()) != null) {
         if (!"".equals(str.trim())) {

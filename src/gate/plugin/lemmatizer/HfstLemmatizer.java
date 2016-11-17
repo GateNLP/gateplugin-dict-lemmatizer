@@ -22,7 +22,6 @@ package gate.plugin.lemmatizer;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.util.Collection;
 import net.sf.hfst.NoTokenizationException;
 import net.sf.hfst.Transducer;
@@ -60,8 +59,11 @@ public class HfstLemmatizer {
 
   public static HfstLemmatizer load(File resourceFile, String langCode) throws Exception {
     Transducer tr;
-    FileInputStream transducerfile = null;
-    transducerfile = new FileInputStream(resourceFile);    
+    // TODO: the TransducerHeader and WeightedTransducer etc classes cannot
+    // handle InputStream they need FileInputStream so it is not possible
+    // to do on-the-fly compression of the model files. Would need to 
+    // change the library or find a version that can do this.
+    FileInputStream transducerfile = new FileInputStream(resourceFile);    
     TransducerHeader h = new TransducerHeader(transducerfile);
     DataInputStream charstream = new DataInputStream(transducerfile);
     TransducerAlphabet a  = new TransducerAlphabet(charstream, h.getSymbolCount());
@@ -73,12 +75,17 @@ public class HfstLemmatizer {
     return new HfstLemmatizer(tr, langCode);
   }
 
-  public String getLemma(String aWord, String aPOSType) throws IOException, NoTokenizationException {
-    Collection<String> analyses = transducer.analyze(aWord);
-    for (String analysis : analyses) {
-      System.out.println(analysis);
-
+  public String getLemma(String aWord, String aPOSType) {
+    Collection<String> analyses;
+    try {
+      analyses = transducer.analyze(aWord);
+    } catch (NoTokenizationException ex) {
+      System.err.println("DEBUG Lemmatizer: no tokenization for "+aWord+"/"+aPOSType+": "+ex.getMessage());
+      return null;
     }
+    //for (String analysis : analyses) {
+    //  System.err.println("DEBUG Lemmatizer analysis of "+aWord+": "+analysis);
+    //}
     for (String analysis : analyses) {
       if ("en".equalsIgnoreCase(langCode)) {
         String grammar = "NONE";
@@ -152,6 +159,11 @@ public class HfstLemmatizer {
           if (aWord.toLowerCase().equals(buffer.toString())) {
             return aWord.toLowerCase();
           } else {
+            // TODO: apparently the lastWord can be the empty string here sometimes!
+            if(lastWord.equals("")) {
+              System.err.println("DEBUG Lemmatizer: lastWord is empty, orig="+vals[vals.length-1]+", buffer="+buffer);
+              return null;
+            }
             String lastChar = lastWord.substring(lastWord.length() - 1, lastWord.length());
             String local = buffer.toString() + lastChar;
             //System.out.println(local);
