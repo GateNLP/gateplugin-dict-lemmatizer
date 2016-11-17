@@ -1,0 +1,3 @@
+*.gz binary -delta
+*.ol binary -delta
+*.finf binary -delta
