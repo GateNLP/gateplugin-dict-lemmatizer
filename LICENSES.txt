@@ -1,0 +1,11 @@
+This plugin comes under the license presented in file LICENSE.txt
+
+In addition the following other components are part of this plugin and 
+come under their own licenses. The following license information reflects
+the situation when this file was created or last updated and may have 
+changed since, please refer to the original sources for accurate information:
+
+* Dependency hfst-ol.jar: Apache 2 license, see https://www.apache.org/licenses/LICENSE-2.0
+* tests/wikinews-*.xml: text copied from wikinews, CC by 2.5, see https://creativecommons.org/licenses/by/2.5/
+* hfst model files:
+* dictionary files from wiktionary: CC BY-SA 3.0, see https://creativecommons.org/licenses/by-sa/3.0/
