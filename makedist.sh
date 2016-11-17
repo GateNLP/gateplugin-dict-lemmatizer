@@ -1,6 +1,6 @@
 #!/bin/bash
 
-name=gateplugin-JdbcLookup
+name=gateplugin-Lemmatizer
 tmpdir=/tmp
 curdir=`pwd -P`
 version=`perl -n -e 'if (/VERSION="([^"]+)"/) { print $1;}' < $curdir/creole.xml`
