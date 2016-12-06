@@ -80,7 +80,7 @@ public class HfstLemmatizer {
     try {
       analyses = transducer.analyze(aWord);
     } catch (NoTokenizationException ex) {
-      System.err.println("DEBUG Lemmatizer: no tokenization for "+aWord+"/"+aPOSType+": "+ex.getMessage());
+      //System.err.println("DEBUG Lemmatizer: no tokenization for "+aWord+"/"+aPOSType+": "+ex.getMessage());
       return null;
     }
     //for (String analysis : analyses) {
@@ -161,7 +161,7 @@ public class HfstLemmatizer {
           } else {
             // TODO: apparently the lastWord can be the empty string here sometimes!
             if(lastWord.equals("")) {
-              System.err.println("DEBUG Lemmatizer: lastWord is empty, orig="+vals[vals.length-1]+", buffer="+buffer);
+              //System.err.println("DEBUG Lemmatizer: lastWord is empty, orig="+vals[vals.length-1]+", buffer="+buffer);
               return null;
             }
             String lastChar = lastWord.substring(lastWord.length() - 1, lastWord.length());
