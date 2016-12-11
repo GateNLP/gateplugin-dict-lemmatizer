@@ -80,6 +80,8 @@ public class HfstLemmatizer {
     try {
       analyses = transducer.analyze(aWord);
     } catch (Exception ex) {
+      // TODO: we sometimes get array out of bounds exceptions here
+      // just ignoring them may be dangerous ...!!
       //System.err.println("DEBUG Lemmatizer: no tokenization for "+aWord+"/"+aPOSType+": "+ex.getMessage());
       return null;
     } 
@@ -169,9 +171,14 @@ public class HfstLemmatizer {
             //System.out.println(local);
             if (local.equalsIgnoreCase(aWord)) {
               return local;
+            }            
+            // TODO: this sometimes tries to take the substring using index -1
+            // TODO!! BUG!!!
+            // So we wrapped the if around it but not sure if this is the correct thing to do!!
+            if(lastWord.length() > 2) {
+              String last2Char = lastWord.substring(lastWord.length() - 2, lastWord.length());            
+              local = buffer.toString() + last2Char;
             }
-            String last2Char = lastWord.substring(lastWord.length() - 2, lastWord.length());
-            local = buffer.toString() + last2Char;
             //System.out.println(local);
             if (local.equalsIgnoreCase(aWord)) {
               return local;
