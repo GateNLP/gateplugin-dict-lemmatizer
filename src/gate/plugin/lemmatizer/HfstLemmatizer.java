@@ -79,10 +79,10 @@ public class HfstLemmatizer {
     Collection<String> analyses;
     try {
       analyses = transducer.analyze(aWord);
-    } catch (NoTokenizationException ex) {
+    } catch (Exception ex) {
       //System.err.println("DEBUG Lemmatizer: no tokenization for "+aWord+"/"+aPOSType+": "+ex.getMessage());
       return null;
-    }
+    } 
     //for (String analysis : analyses) {
     //  System.err.println("DEBUG Lemmatizer analysis of "+aWord+": "+analysis);
     //}

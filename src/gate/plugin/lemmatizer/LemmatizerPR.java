@@ -163,6 +163,12 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
   
   HfstLemmatizer hfstLemmatizer = null;  // if null we do not have a FST
   
+  // If this is true, the Hfst will always be suppressed.
+  // This can only be set (for debugging) by setting to propery 
+  // gateplugin-Lemmatizer.noHfst to something other than the string "false"; 
+  private boolean noHfst = false;
+  
+  
   ////////////////////// PROCESSING
   
   @Override
@@ -225,7 +231,7 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
     } else {
       tokenString = (String) fm.get(textFeatureToUse);
     }
-    String kind = (String) fm.get("kind");
+    String kind = ((String) fm.get("kind")).toLowerCase();
     String lemma = null;  // as long as the lemma is null we can still try to find one ...
     if (kind.equals("number")) {
       lemma = tokenString;
@@ -255,8 +261,9 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
         lemma = pronDic.get(tokenString.toLowerCase());
       }
       // TODO: replace with indicator of if we have a FST from the init phase
-      if (!"nl".equalsIgnoreCase(languageCode) && lemma == null) {
-        lemma = hfstLemmatizer.getLemma(tokenString,pos);
+      if (!"nl".equalsIgnoreCase(languageCode) && lemma == null) {        
+        if(!noHfst)
+          lemma = hfstLemmatizer.getLemma(tokenString,pos);
       }
       if (lemma == null || "".equals(lemma)) {
         lemma = tokenString;
@@ -315,9 +322,16 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
     if(lemmatizerFile.exists()) {
       if(!loadedFst.equals(languageCode)) {
         try {
-          System.err.println("Lemmatizer: loading HFST model for "+languageCode);
-          hfstLemmatizer = HfstLemmatizer.load(lemmatizerFile,languageCode);
-          System.err.println("Lemmatizer: HFST model loaded");
+          String noHfstProp = System.getProperty("gateplugin-Lemmatizer.noHfst");
+          if(noHfstProp != null && !noHfstProp.toLowerCase().equals("false")) {
+            System.err.println("DEBUG: gateplugin-Lemmatizer.noHfst is set, not using  HFST");
+            noHfst = true;
+          } else {
+            noHfst = false;
+            System.err.println("Lemmatizer: loading HFST model for "+languageCode);
+            hfstLemmatizer = HfstLemmatizer.load(lemmatizerFile,languageCode);
+            System.err.println("Lemmatizer: HFST model loaded");
+          }
         } catch (Exception ex) {
           throw new GateRuntimeException("Could not load lemmatization transducer "+lemmatizerFile,ex);
         }
