@@ -161,6 +161,10 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
   String loadedDicts = "";
   String loadedFst = "";
   
+  int nrTokens = 0;
+  int nrErrors = 0;
+  int nrHfst = 0;
+  
   HfstLemmatizer hfstLemmatizer = null;  // if null we do not have a FST
   
   // If this is true, the Hfst will always be suppressed.
@@ -225,6 +229,7 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
   }
   
   private void lemmatize(Annotation token, FeatureMap fm, String pos) {
+    nrTokens += 1;
     String tokenString;
     if (textFeatureToUse == null) {
       tokenString = gate.Utils.cleanStringFor(document, token);
@@ -264,11 +269,13 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
       if (!"nl".equalsIgnoreCase(languageCode) && lemma == null) {        
         if(!noHfst)
           try {
+            nrHfst += 1;
             lemma = hfstLemmatizer.getLemma(tokenString.toLowerCase(),pos);
           } catch (Exception ex) {
             System.err.println("Exception for "+tokenString.toLowerCase()+": "+ex.getClass()+", "+ex.getMessage());
             ex.printStackTrace(System.err);
             lemma = null;
+            nrErrors += 1;
           }
       }
       if (lemma == null || "".equals(lemma)) {
@@ -281,6 +288,10 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
 
   @Override
   protected void beforeFirstDocument(Controller ctrl) {
+    
+    nrTokens = 0;
+    nrErrors = 0;
+    nrHfst = 0;
     
     if(posFeature == null || posFeature.trim().isEmpty()) {
       posFeatureToUse = "category";      
@@ -352,6 +363,9 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
 
   @Override
   protected void afterLastDocument(Controller ctrl, Throwable t) {
+    System.err.println("Tokens processed:                  "+nrTokens);
+    System.err.println("Tokens for which HFST was invoked: "+nrHfst);
+    System.err.println("Tokens for which HFST had errors:  "+nrErrors);
   }
 
   @Override
