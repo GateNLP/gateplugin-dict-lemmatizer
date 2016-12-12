@@ -75,16 +75,11 @@ public class HfstLemmatizer {
     return new HfstLemmatizer(tr, langCode);
   }
 
-  public String getLemma(String aWord, String aPOSType) {
+  public String getLemma(String aWord, String aPOSType) throws NoTokenizationException {
     Collection<String> analyses;
-    try {
-      analyses = transducer.analyze(aWord);
-    } catch (Exception ex) {
-      // TODO: we sometimes get array out of bounds exceptions here
-      // just ignoring them may be dangerous ...!!
-      //System.err.println("DEBUG Lemmatizer: no tokenization for "+aWord+"/"+aPOSType+": "+ex.getMessage());
-      return null;
-    } 
+    // NOTE: this will not catch any exceptions so we can catch them in the caller
+    // and do some debugging
+    analyses = transducer.analyze(aWord);
     //for (String analysis : analyses) {
     //  System.err.println("DEBUG Lemmatizer analysis of "+aWord+": "+analysis);
     //}

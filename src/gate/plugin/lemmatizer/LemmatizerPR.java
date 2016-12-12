@@ -263,7 +263,12 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
       // TODO: replace with indicator of if we have a FST from the init phase
       if (!"nl".equalsIgnoreCase(languageCode) && lemma == null) {        
         if(!noHfst)
-          lemma = hfstLemmatizer.getLemma(tokenString,pos);
+          try {
+            lemma = hfstLemmatizer.getLemma(tokenString.toLowerCase(),pos);
+          } catch (Exception ex) {
+            System.err.println("Exception for "+tokenString.toLowerCase()+": "+ex.getMessage());
+            lemma = null;
+          }
       }
       if (lemma == null || "".equals(lemma)) {
         lemma = tokenString;
