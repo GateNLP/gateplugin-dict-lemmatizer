@@ -270,9 +270,9 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
         if(!noHfst)
           try {
             nrHfst += 1;
-            lemma = hfstLemmatizer.getLemma(tokenString.toLowerCase(),pos);
+            lemma = hfstLemmatizer.getLemma(tokenString,pos);
           } catch (Exception ex) {
-            System.err.println("Exception for "+tokenString.toLowerCase()+": "+ex.getClass()+", "+ex.getMessage());
+            System.err.println("Exception for "+tokenString+": "+ex.getClass()+", "+ex.getMessage());
             ex.printStackTrace(System.err);
             lemma = null;
             nrErrors += 1;
