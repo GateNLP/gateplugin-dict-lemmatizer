@@ -387,11 +387,13 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
         if (!"".equals(str.trim())) {
           String values[] = str.split("===");
           if (values.length == 2) {
-            String vals[] = values[1].split(";");
-            for (int i = 0; i < vals.length; i++) {
-              String val = vals[i];
-              map.put(val.toLowerCase(), values[0].trim());
-
+            String forms[] = values[1].split(";");
+            String lemma = values[0].trim();
+            for (String el : forms) {
+              String form = el.trim();
+              if(!form.isEmpty()) {
+                map.put(form.toLowerCase(), lemma);
+              }
             }
           }
         }
