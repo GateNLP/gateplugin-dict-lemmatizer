@@ -270,6 +270,9 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
       } else if ("ADV".equalsIgnoreCase(pos)) {
         lemma = advDic.get(tokenString.toLowerCase());
         lemmatizeStatus = "ADV";
+      } else if ("DET".equalsIgnoreCase(pos)) {
+        lemma = detDic.get(tokenString.toLowerCase());
+        lemmatizeStatus = "DET";
       } else if ("PRON".equalsIgnoreCase(pos)) {
         lemma = pronDic.get(tokenString.toLowerCase());
         lemmatizeStatus = "PRON";
