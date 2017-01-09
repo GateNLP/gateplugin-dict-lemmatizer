@@ -229,6 +229,7 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
   }
   
   private void lemmatize(Annotation token, FeatureMap fm, String pos) {
+    String lemmatizeStatus = "";   // an indication how we did the lemmatization for this token
     nrTokens += 1;
     String tokenString;
     if (textFeatureToUse == null) {
@@ -240,10 +241,13 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
     String lemma = null;  // as long as the lemma is null we can still try to find one ...
     if (kind.equals("number")) {
       lemma = tokenString;
+      lemmatizeStatus = "number";
     } else if (kind.equals("punct")) {
       lemma = tokenString;
+      lemmatizeStatus = "punct";
     } else if (detDic.get(tokenString.toLowerCase()) != null) {
       lemma = tokenString;
+      lemmatizeStatus = "determiner";
     } else {
 
       // TODO: why is this done????
@@ -256,14 +260,19 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
       //String generalType = posMap.get(posType.toLowerCase());
       if ("NOUN".equalsIgnoreCase(pos)) {
         lemma = nounDic.get(tokenString.toLowerCase());
+        lemmatizeStatus = "NOUN";
       } else if ("VERB".equalsIgnoreCase(pos)) {
         lemma = verbDic.get(tokenString.toLowerCase());
+        lemmatizeStatus = "VERB";
       } else if ("ADJ".equalsIgnoreCase(pos)) {
         lemma = adjDic.get(tokenString.toLowerCase());
+        lemmatizeStatus = "ADJ";
       } else if ("ADV".equalsIgnoreCase(pos)) {
         lemma = advDic.get(tokenString.toLowerCase());
+        lemmatizeStatus = "ADV";
       } else if ("PRON".equalsIgnoreCase(pos)) {
         lemma = pronDic.get(tokenString.toLowerCase());
+        lemmatizeStatus = "PRON";
       }
       // TODO: replace with indicator of if we have a FST from the init phase
       if (!"nl".equalsIgnoreCase(languageCode) && lemma == null) {        
@@ -271,6 +280,11 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
           try {
             nrHfst += 1;
             lemma = hfstLemmatizer.getLemma(tokenString,pos);
+            if(lemma != null && !lemma.isEmpty()) {
+              lemmatizeStatus = "HFST_HAVE";
+            } else {
+              lemmatizeStatus = "HFST_EMPTY";
+            }
           } catch (Exception ex) {
             System.err.println("Exception for "+tokenString+": "+ex.getClass()+", "+ex.getMessage());
             ex.printStackTrace(System.err);
@@ -280,9 +294,11 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
       }
       if (lemma == null || "".equals(lemma)) {
         lemma = tokenString;
+        lemmatizeStatus = "EMPTY";
       }
     }
     fm.put(lemmaFeatureToUse, lemma);
+    fm.put("lemmatizer.status",lemmatizeStatus);
   }
   
 
