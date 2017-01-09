@@ -75,11 +75,22 @@ public class HfstLemmatizer {
     return new HfstLemmatizer(tr, langCode);
   }
 
-  public String getLemma(String aWord, String aPOSType) throws NoTokenizationException {
+  public String getLemma(String aWord, String aPOSType)  {
     Collection<String> analyses;
     // NOTE: this will not catch any exceptions so we can catch them in the caller
     // and do some debugging
-    analyses = transducer.analyze(aWord);
+    // NOTE: in the hfst-optimized-lookup code, the common abstract base class of both weighted
+    // and unweighted transducers is NOT public. Since we did not want to fork because just
+    // of this we handle this by checking the subclass.
+    try {
+      if(transducer instanceof WeightedTransducer) {
+        analyses = ((WeightedTransducer)transducer).analyze(aWord);
+      } else {
+        analyses = ((UnweightedTransducer)transducer).analyze(aWord);
+      }
+    } catch (NoTokenizationException ex) {
+      return null;
+    }
     //for (String analysis : analyses) {
     //  System.err.println("DEBUG Lemmatizer analysis of "+aWord+": "+analysis);
     //}
