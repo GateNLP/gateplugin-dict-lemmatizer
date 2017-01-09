@@ -274,8 +274,12 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
         lemma = pronDic.get(tokenString.toLowerCase());
         lemmatizeStatus = "PRON";
       } else {
-        lemma = tokenString;
-        lemmatizeStatus = "POS-"+pos;
+        lemmatizeStatus = "UNHANDLEDPOS-"+pos;        
+      }
+      if(lemma == null) {
+        lemmatizeStatus += "-NOTFOUND";
+      } else {
+        lemmatizeStatus += "-FOUND";
       }
       // TODO: replace with indicator of if we have a FST from the init phase
       if (lemma == null && hfstLemmatizer != null && !noHfst) {        
@@ -285,6 +289,7 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
             if(lemma != null && !lemma.isEmpty()) {
               lemmatizeStatus += "-HFST_HAVE";
             } else {
+              lemma = tokenString;
               lemmatizeStatus += "-HFST_EMPTY";
             }
           } catch (Exception ex) {
@@ -294,6 +299,12 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
             lemmatizeStatus += "-HFST_ERROR";
             nrErrors += 1;
           }
+      }
+      // NOTE: this will only happen if we did not find a lemma in the dictionary and 
+      // HFST was not used for some reason
+      if(lemma == null) {
+        lemma = tokenString;
+        lemmatizeStatus += "-NOHFST";
       }
     }
     fm.put(lemmaFeatureToUse, lemma);
