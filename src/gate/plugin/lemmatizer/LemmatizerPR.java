@@ -273,28 +273,27 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
       } else if ("PRON".equalsIgnoreCase(pos)) {
         lemma = pronDic.get(tokenString.toLowerCase());
         lemmatizeStatus = "PRON";
+      } else {
+        lemma = tokenString;
+        lemmatizeStatus = "POS-"+pos;
       }
       // TODO: replace with indicator of if we have a FST from the init phase
-      if (!"nl".equalsIgnoreCase(languageCode) && lemma == null) {        
-        if(!noHfst)
+      if (lemma == null && hfstLemmatizer != null && !noHfst) {        
           try {
             nrHfst += 1;
             lemma = hfstLemmatizer.getLemma(tokenString,pos);
             if(lemma != null && !lemma.isEmpty()) {
-              lemmatizeStatus = "HFST_HAVE";
+              lemmatizeStatus += "-HFST_HAVE";
             } else {
-              lemmatizeStatus = "HFST_EMPTY";
+              lemmatizeStatus += "-HFST_EMPTY";
             }
           } catch (Exception ex) {
             System.err.println("Exception for "+tokenString+": "+ex.getClass()+", "+ex.getMessage());
             ex.printStackTrace(System.err);
-            lemma = null;
+            lemma = tokenString;
+            lemmatizeStatus += "-HFST_ERROR";
             nrErrors += 1;
           }
-      }
-      if (lemma == null || "".equals(lemma)) {
-        lemma = tokenString;
-        lemmatizeStatus = "EMPTY";
       }
     }
     fm.put(lemmaFeatureToUse, lemma);
