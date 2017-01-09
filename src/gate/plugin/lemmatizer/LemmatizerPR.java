@@ -416,12 +416,13 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
 
   
   public static Map<String, String> loadDictionary(File dictFile) {
+    Map<String, String> map = new HashMap<String, String>();
     if(!dictFile.exists()) {
       System.err.println("LemmatizerPR: WARNING - dictionary file does not exist:  "+dictFile.getAbsolutePath());
+      return map;
     }
     BufferedReader in = null;
     try {
-      Map<String, String> map = new HashMap<String, String>();
       in = new BufferedReader(
               new InputStreamReader(
                       new GZIPInputStream(
