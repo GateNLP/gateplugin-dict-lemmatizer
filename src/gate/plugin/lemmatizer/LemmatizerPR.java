@@ -245,9 +245,9 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
     } else if (kind.equals("punct")) {
       lemma = tokenString;
       lemmatizeStatus = "punct";
-    } else if (detDic.get(tokenString.toLowerCase()) != null) {
-      lemma = tokenString;
-      lemmatizeStatus = "determiner";
+    //} else if (detDic.get(tokenString.toLowerCase()) != null) {
+    //  lemma = tokenString;
+    //  lemmatizeStatus = "determiner";
     } else {
 
       // TODO: why is this done????
