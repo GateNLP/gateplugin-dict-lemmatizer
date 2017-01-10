@@ -23,12 +23,15 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Collection;
-import net.sf.hfst.NoTokenizationException;
-import net.sf.hfst.Transducer;
-import net.sf.hfst.TransducerAlphabet;
-import net.sf.hfst.TransducerHeader;
-import net.sf.hfst.UnweightedTransducer;
-import net.sf.hfst.WeightedTransducer;
+//import net.hfst.NoTokenizationException;
+import fi.seco.hfst.Transducer;
+import fi.seco.hfst.Transducer.Result;
+import fi.seco.hfst.TransducerAlphabet;
+import fi.seco.hfst.TransducerHeader;
+import fi.seco.hfst.TransducerStream;
+import fi.seco.hfst.UnweightedTransducer;
+import fi.seco.hfst.WeightedTransducer;
+import java.util.List;
 
 /**
  * A class representing the HFST lemmatizer transducer.
@@ -63,27 +66,29 @@ public class HfstLemmatizer {
     // handle InputStream they need FileInputStream so it is not possible
     // to do on-the-fly compression of the model files. Would need to 
     // change the library or find a version that can do this.
-    FileInputStream transducerfile = new FileInputStream(resourceFile);    
-    TransducerHeader h = new TransducerHeader(transducerfile);
-    DataInputStream charstream = new DataInputStream(transducerfile);
-    TransducerAlphabet a  = new TransducerAlphabet(charstream, h.getSymbolCount());
+    FileInputStream transducerifs = new FileInputStream(resourceFile);    
+    TransducerStream ts = new TransducerStream(new DataInputStream(transducerifs));
+    TransducerHeader h = new TransducerHeader(ts);
+    TransducerAlphabet a  = new TransducerAlphabet(ts, h.getSymbolCount());
     if (h.isWeighted()) {
-      tr = new WeightedTransducer(transducerfile, h, a);
+      tr = new WeightedTransducer(ts, h, a);
     } else {
-      tr = new UnweightedTransducer(transducerfile, h, a);
+      tr = new UnweightedTransducer(ts, h, a);
     }
     return new HfstLemmatizer(tr, langCode);
   }
 
-  public String getLemma(String aWord, String aPOSType) throws NoTokenizationException {
-    Collection<String> analyses;
+  public String getLemma(String aWord, String aPOSType) throws Exception {
+    List<Result> analyses;
     // NOTE: this will not catch any exceptions so we can catch them in the caller
     // and do some debugging
     analyses = transducer.analyze(aWord);
-    //for (String analysis : analyses) {
+    //for (Result analysis : analyses) {
     //  System.err.println("DEBUG Lemmatizer analysis of "+aWord+": "+analysis);
     //}
-    for (String analysis : analyses) {
+    for (Result analysisResult : analyses) {
+      // TODO: this is incorrect, we need to change this
+      String analysis = String.join("", analysisResult.getSymbols());
       if ("en".equalsIgnoreCase(langCode)) {
         String grammar = "NONE";
         String grammarCheck = "NONE";

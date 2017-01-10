@@ -153,6 +153,7 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
   Map<String, String> verbDic;
   Map<String, String> detDic;
   Map<String, String> pronDic;
+  Map<String, String> adpDic;
   
   String textFeatureToUse = "";
   String posFeatureToUse = "category";
@@ -229,6 +230,7 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
   }
   
   private void lemmatize(Annotation token, FeatureMap fm, String pos) {
+    String lemmatizeStatus = "";   // an indication how we did the lemmatization for this token
     nrTokens += 1;
     String tokenString;
     if (textFeatureToUse == null) {
@@ -240,10 +242,13 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
     String lemma = null;  // as long as the lemma is null we can still try to find one ...
     if (kind.equals("number")) {
       lemma = tokenString;
+      lemmatizeStatus = "number";
     } else if (kind.equals("punct")) {
       lemma = tokenString;
-    } else if (detDic.get(tokenString.toLowerCase()) != null) {
-      lemma = tokenString;
+      lemmatizeStatus = "punct";
+    //} else if (detDic.get(tokenString.toLowerCase()) != null) {
+    //  lemma = tokenString;
+    //  lemmatizeStatus = "determiner";
     } else {
 
       // TODO: why is this done????
@@ -254,35 +259,70 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
       //}
       //System.out.println(posType);
       //String generalType = posMap.get(posType.toLowerCase());
-      if ("NOUN".equalsIgnoreCase(pos)) {
-        lemma = nounDic.get(tokenString.toLowerCase());
-      } else if ("VERB".equalsIgnoreCase(pos)) {
-        lemma = verbDic.get(tokenString.toLowerCase());
-      } else if ("ADJ".equalsIgnoreCase(pos)) {
+      
+      // This is based on the Universial POS tags, see http://universaldependencies.org/u/pos/
+      if ("ADJ".equalsIgnoreCase(pos)) {
         lemma = adjDic.get(tokenString.toLowerCase());
+        lemmatizeStatus = "ADJ";
+      } else if ("ADP".equalsIgnoreCase(pos)) {
+        lemma = adpDic.get(tokenString.toLowerCase());
+        lemmatizeStatus = "ADP";
       } else if ("ADV".equalsIgnoreCase(pos)) {
         lemma = advDic.get(tokenString.toLowerCase());
+        lemmatizeStatus = "ADV";
+      // MISSING: AUX, CCONJ
+      } else if ("DET".equalsIgnoreCase(pos)) {
+        lemma = detDic.get(tokenString.toLowerCase());
+        lemmatizeStatus = "DET";
+      // MISSSING: INTJ
+      } else if ("NOUN".equalsIgnoreCase(pos)) {
+        lemma = nounDic.get(tokenString.toLowerCase());
+        lemmatizeStatus = "NOUN";
+      // MISSING: NUM, PART
       } else if ("PRON".equalsIgnoreCase(pos)) {
         lemma = pronDic.get(tokenString.toLowerCase());
+        lemmatizeStatus = "PRON";
+      // MISSING: PROPN, PUNCT, SCONJ, SYM
+      } else if ("VERB".equalsIgnoreCase(pos)) {
+        lemma = verbDic.get(tokenString.toLowerCase());
+        lemmatizeStatus = "VERB";
+      // MISSING: X
+      } else {
+        lemmatizeStatus = "UNHANDLEDPOS-"+pos;        
+      }
+      if(lemma == null) {
+        lemmatizeStatus += "-NOTFOUND";
+      } else {
+        lemmatizeStatus += "-FOUND";
       }
       // TODO: replace with indicator of if we have a FST from the init phase
-      if (!"nl".equalsIgnoreCase(languageCode) && lemma == null) {        
-        if(!noHfst)
+      if (lemma == null && hfstLemmatizer != null && !noHfst) {        
           try {
             nrHfst += 1;
             lemma = hfstLemmatizer.getLemma(tokenString,pos);
+            if(lemma != null && !lemma.isEmpty()) {
+              lemmatizeStatus += "-HFST_HAVE";
+            } else {
+              lemma = tokenString;
+              lemmatizeStatus += "-HFST_EMPTY";
+            }
           } catch (Exception ex) {
             System.err.println("Exception for "+tokenString+": "+ex.getClass()+", "+ex.getMessage());
             ex.printStackTrace(System.err);
-            lemma = null;
+            lemma = tokenString;
+            lemmatizeStatus += "-HFST_ERROR";
             nrErrors += 1;
           }
       }
-      if (lemma == null || "".equals(lemma)) {
+      // NOTE: this will only happen if we did not find a lemma in the dictionary and 
+      // HFST was not used for some reason
+      if(lemma == null) {
         lemma = tokenString;
+        lemmatizeStatus += "-NOHFST";
       }
     }
     fm.put(lemmaFeatureToUse, lemma);
+    fm.put("lemmatizer.status",lemmatizeStatus);
   }
   
 
@@ -322,12 +362,13 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
     }
     if(!loadedDicts.equals(languageCode)) {
       System.err.println("Lemmatizer: loading dictionaries for "+languageCode);
-      nounDic = loadDictionary(new File(dictDir,"nounDic.txt.gz"));
       adjDic = loadDictionary(new File(dictDir,"adjDic.txt.gz"));
+      adpDic = loadDictionary(new File(dictDir, "adpDic.txt.gz"));
       advDic = loadDictionary(new File(dictDir,"advDic.txt.gz"));
-      verbDic = loadDictionary(new File(dictDir,"verbDic.txt.gz"));
       detDic = loadDictionary(new File(dictDir,"detDic.txt.gz"));
+      nounDic = loadDictionary(new File(dictDir,"nounDic.txt.gz"));
       pronDic = loadDictionary(new File(dictDir,"pronounDic.txt.gz"));
+      verbDic = loadDictionary(new File(dictDir,"verbDic.txt.gz"));
       System.err.println("Lemmatizer: dictionaries loaded");
       loadedDicts = languageCode;
     }
@@ -375,9 +416,13 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
 
   
   public static Map<String, String> loadDictionary(File dictFile) {
+    Map<String, String> map = new HashMap<String, String>();
+    if(!dictFile.exists()) {
+      System.err.println("LemmatizerPR: WARNING - dictionary file does not exist:  "+dictFile.getAbsolutePath());
+      return map;
+    }
     BufferedReader in = null;
     try {
-      Map<String, String> map = new HashMap<String, String>();
       in = new BufferedReader(
               new InputStreamReader(
                       new GZIPInputStream(

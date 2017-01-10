@@ -6,5 +6,6 @@
   HELPURL=""
 >
   <JAR scan="true">gateplugin-Lemmatizer.jar</JAR>
-  <JAR>lib/hfst-ol.jar</JAR>
+  <JAR>lib/hfst-1.1.5.jar</JAR>
+  <JAR>lib/hppc-0.7.1.jar</JAR>
 </CREOLE-DIRECTORY>
