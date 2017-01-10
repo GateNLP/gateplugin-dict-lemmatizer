@@ -32,6 +32,7 @@ import fi.seco.hfst.TransducerStream;
 import fi.seco.hfst.UnweightedTransducer;
 import fi.seco.hfst.WeightedTransducer;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
 
 /**
  * A class representing the HFST lemmatizer transducer.
@@ -66,8 +67,9 @@ public class HfstLemmatizer {
     // handle InputStream they need FileInputStream so it is not possible
     // to do on-the-fly compression of the model files. Would need to 
     // change the library or find a version that can do this.
-    FileInputStream transducerifs = new FileInputStream(resourceFile);    
-    TransducerStream ts = new TransducerStream(new DataInputStream(transducerifs));
+    FileInputStream ifs = new FileInputStream(resourceFile);
+    GZIPInputStream gis = new GZIPInputStream(ifs);
+    TransducerStream ts = new TransducerStream(new DataInputStream(gis));
     TransducerHeader h = new TransducerHeader(ts);
     TransducerAlphabet a  = new TransducerAlphabet(ts, h.getSymbolCount());
     if (h.isWeighted()) {

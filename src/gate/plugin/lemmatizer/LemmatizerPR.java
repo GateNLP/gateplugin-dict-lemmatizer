@@ -376,7 +376,7 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
     // Load the hfst lemmatizer if it exists for the language, otherwise
     // the hfstLemmatizer variable remains null
     File lemmatizerDir = new File(resourcesDir,"lemmaModels");
-    File lemmatizerFile = new File(lemmatizerDir,languageCode+".hfst.ol");
+    File lemmatizerFile = new File(lemmatizerDir,languageCode+".hfst.ol.gz");
     if(lemmatizerFile.exists()) {
       if(!loadedFst.equals(languageCode)) {
         try {
