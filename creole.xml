@@ -1,7 +1,7 @@
 <!-- creole.xml for gateplugin-JdbcLookup -->
 <CREOLE-DIRECTORY
   ID="Lemmatizer"
-  VERSION="0.1"
+  VERSION="0.2"
   DESCRIPTION="Add word lemmata for various languages"
   HELPURL=""
 >
