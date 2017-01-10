@@ -7,21 +7,13 @@ morphological transducers created for the
 [Helsinki Finite-State Transducer (FST) software](http://www.ling.helsinki.fi/kieliteknologia/tutkimus/hfst/)
 to find lemmata for tokens. 
 
-IMPORTANT: because of the large size of the dictionary files and HFST models, the language specific
-files must be downloaded separately. Currently, resources for the following languages are available:
+Currently, the following languages are supported:
 * en (English)
 * de (German)
 * fr (French)
 * it (Italian)
 * nl (Dutch)
 * es (Spanish)
-
-To install the resources, download the relevant zip archives and unpack tham in the root directory of the plugin so
-that the files get extracted as `./resources/dictionaries/<langcode>/*` and `./resources/lemmaModels/<langcode>.hfst.ol`.
-
-Of course it is also possible to use dictionary files or HFST models you have created yourself instead.
-
-The software for creating the dictionaries from Wiktionary dumps is available here: (To Be Done)
 
 The input for the PR must already be tokenised and every token must have
 a universal dependency POS tag as a feature.
