@@ -165,6 +165,8 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
   int nrTokens = 0;
   int nrErrors = 0;
   int nrHfst = 0;
+  int nrListLookups = 0;
+  int nrListLookupsNotFound = 0;
   
   HfstLemmatizer hfstLemmatizer = null;  // if null we do not have a FST
   
@@ -172,6 +174,8 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
   // This can only be set (for debugging) by setting to propery 
   // gateplugin-Lemmatizer.noHfst to something other than the string "false"; 
   private boolean noHfst = false;
+  
+  private boolean noLists = false;
   
   
   ////////////////////// PROCESSING
@@ -264,28 +268,42 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
       if ("ADJ".equalsIgnoreCase(pos)) {
         lemma = adjDic.get(tokenString.toLowerCase());
         lemmatizeStatus = "ADJ";
+        nrListLookups += 1;
+        if(lemma==null) nrListLookupsNotFound += 1;
       } else if ("ADP".equalsIgnoreCase(pos)) {
         lemma = adpDic.get(tokenString.toLowerCase());
         lemmatizeStatus = "ADP";
+        nrListLookups += 1;
+        if(lemma==null) nrListLookupsNotFound += 1;
       } else if ("ADV".equalsIgnoreCase(pos)) {
         lemma = advDic.get(tokenString.toLowerCase());
         lemmatizeStatus = "ADV";
+        nrListLookups += 1;
+        if(lemma==null) nrListLookupsNotFound += 1;
       // MISSING: AUX, CCONJ
       } else if ("DET".equalsIgnoreCase(pos)) {
         lemma = detDic.get(tokenString.toLowerCase());
         lemmatizeStatus = "DET";
+        nrListLookups += 1;
+        if(lemma==null) nrListLookupsNotFound += 1;
       // MISSSING: INTJ
       } else if ("NOUN".equalsIgnoreCase(pos)) {
         lemma = nounDic.get(tokenString.toLowerCase());
         lemmatizeStatus = "NOUN";
+        nrListLookups += 1;
+        if(lemma==null) nrListLookupsNotFound += 1;
       // MISSING: NUM, PART
       } else if ("PRON".equalsIgnoreCase(pos)) {
         lemma = pronDic.get(tokenString.toLowerCase());
         lemmatizeStatus = "PRON";
+        nrListLookups += 1;
+        if(lemma==null) nrListLookupsNotFound += 1;
       // MISSING: PROPN, PUNCT, SCONJ, SYM
       } else if ("VERB".equalsIgnoreCase(pos)) {
         lemma = verbDic.get(tokenString.toLowerCase());
         lemmatizeStatus = "VERB";
+        nrListLookups += 1;
+        if(lemma==null) nrListLookupsNotFound += 1;
       // MISSING: X
       } else {
         lemmatizeStatus = "UNHANDLEDPOS-"+pos;        
@@ -332,6 +350,8 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
     nrTokens = 0;
     nrErrors = 0;
     nrHfst = 0;
+    nrListLookups = 0;
+    nrListLookupsNotFound = 0;
     
     if(posFeature == null || posFeature.trim().isEmpty()) {
       posFeatureToUse = "category";      
@@ -357,19 +377,44 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
     File pluginDir = gate.util.Files.fileFromURL(creoleXml).getParentFile();
     File resourcesDir = new File(pluginDir,"resources");
     File dictDir = new File(new File(resourcesDir,"dictionaries"),languageCode);
-    if(!dictDir.exists()) {
-      throw new GateRuntimeException("No dictionaries found for language "+languageCode);
-    }
     if(!loadedDicts.equals(languageCode)) {
-      System.err.println("Lemmatizer: loading dictionaries for "+languageCode);
-      adjDic = loadDictionary(new File(dictDir,"adjDic.txt.gz"));
-      adpDic = loadDictionary(new File(dictDir, "adpDic.txt.gz"));
-      advDic = loadDictionary(new File(dictDir,"advDic.txt.gz"));
-      detDic = loadDictionary(new File(dictDir,"detDic.txt.gz"));
-      nounDic = loadDictionary(new File(dictDir,"nounDic.txt.gz"));
-      pronDic = loadDictionary(new File(dictDir,"pronounDic.txt.gz"));
-      verbDic = loadDictionary(new File(dictDir,"verbDic.txt.gz"));
-      System.err.println("Lemmatizer: dictionaries loaded");
+      // if there are no dictionaries or the use of dictionaries has been disabled,
+      // create empty ones, and only the hfst is used.
+      // Otherwise load the dictionaries, at least the ones which are there
+      noLists = false;
+      if(!dictDir.exists()) {
+        System.err.println("List directory "+dictDir+" for language "+languageCode+" does not exist, not using lists.");
+        noLists = true;
+      }
+      String noListsProp = System.getProperty("gateplugin-Lemmatizer.noLists");
+      if(noListsProp != null && !noListsProp.toLowerCase().equals("false")) {
+        System.err.println("DEBUG: gateplugin-Lemmatizer.noLists is set, not using lists");
+        noLists = true;
+      }
+      String noListsEnv = System.getenv("GATEPLUGIN_LEMMATIZER_NOLISTS");
+      if(noListsEnv != null && !noListsEnv.toLowerCase().equals("false")) {
+        System.err.println("DEBUG: GATEPLUGIN_LEMMATIZER_NOLISTS is set, not using lists");
+        noLists = true;
+      }
+      if(noLists) {
+        adjDic = emptyDictionary();
+        adpDic = emptyDictionary();
+        advDic = emptyDictionary();
+        detDic = emptyDictionary();
+        nounDic = emptyDictionary();
+        pronDic = emptyDictionary();
+        verbDic = emptyDictionary();        
+      } else {
+        System.err.println("Lemmatizer: loading dictionaries for "+languageCode);
+        adjDic = loadDictionary(new File(dictDir,"adjDic.txt.gz"));
+        adpDic = loadDictionary(new File(dictDir, "adpDic.txt.gz"));
+        advDic = loadDictionary(new File(dictDir,"advDic.txt.gz"));
+        detDic = loadDictionary(new File(dictDir,"detDic.txt.gz"));
+        nounDic = loadDictionary(new File(dictDir,"nounDic.txt.gz"));
+        pronDic = loadDictionary(new File(dictDir,"pronounDic.txt.gz"));
+        verbDic = loadDictionary(new File(dictDir,"verbDic.txt.gz"));
+        System.err.println("Lemmatizer: dictionaries loaded");
+      }
       loadedDicts = languageCode;
     }
     
@@ -380,12 +425,18 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
     if(lemmatizerFile.exists()) {
       if(!loadedFst.equals(languageCode)) {
         try {
+          noHfst = false;
           String noHfstProp = System.getProperty("gateplugin-Lemmatizer.noHfst");
           if(noHfstProp != null && !noHfstProp.toLowerCase().equals("false")) {
             System.err.println("DEBUG: gateplugin-Lemmatizer.noHfst is set, not using  HFST");
             noHfst = true;
-          } else {
-            noHfst = false;
+          }
+          String noHfstEnv = System.getenv("GATEPLUGIN_LEMMATIZER_NOHFST");
+          if(noHfstEnv != null && !noHfstEnv.toLowerCase().equals("false")) {
+            System.err.println("DEBUG: GATEPLUGIN_LEMMATIZER_NOHFST is set, not using  HFST");
+            noHfst = true;
+          }
+          if(!noHfst) {
             System.err.println("Lemmatizer: loading HFST model for "+languageCode);
             hfstLemmatizer = HfstLemmatizer.load(lemmatizerFile,languageCode);
             System.err.println("Lemmatizer: HFST model loaded");
@@ -404,9 +455,11 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
 
   @Override
   protected void afterLastDocument(Controller ctrl, Throwable t) {
-    System.err.println("Tokens processed:                  "+nrTokens);
-    System.err.println("Tokens for which HFST was invoked: "+nrHfst);
-    System.err.println("Tokens for which HFST had errors:  "+nrErrors);
+    System.err.println("Tokens processed:                   "+nrTokens);
+    System.err.println("Tokens for which HFST was invoked:  "+nrHfst);
+    System.err.println("Tokens for which HFST had errors:   "+nrErrors);
+    System.err.println("Tokens for which Lists looked up:   "+nrListLookups);
+    System.err.println("Tokens for which not found in List: "+nrListLookupsNotFound);
   }
 
   @Override
@@ -414,6 +467,9 @@ public class LemmatizerPR  extends AbstractDocumentProcessor {
   }
   
 
+  public static Map<String, String> emptyDictionary() {
+    return new HashMap<String, String>();
+  }
   
   public static Map<String, String> loadDictionary(File dictFile) {
     Map<String, String> map = new HashMap<String, String>();
