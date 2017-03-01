@@ -1,11 +1,11 @@
 <!-- creole.xml for gateplugin-JdbcLookup -->
 <CREOLE-DIRECTORY
-  ID="Lemmatizer"
-  VERSION="0.2"
+  ID="DictLemmatizer"
+  VERSION="0.3"
   DESCRIPTION="Add word lemmata for various languages"
   HELPURL=""
 >
-  <JAR scan="true">gateplugin-Lemmatizer.jar</JAR>
+  <JAR scan="true">gateplugin-dict-lemmatizer.jar</JAR>
   <JAR>lib/hfst-1.1.5.jar</JAR>
   <JAR>lib/hppc-0.7.1.jar</JAR>
 </CREOLE-DIRECTORY>

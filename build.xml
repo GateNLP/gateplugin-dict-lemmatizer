@@ -1,9 +1,9 @@
-<project name="gateplugin-Lemmatizer" basedir="." default="jar">
+<project name="gateplugin-dict-lemmatizer" basedir="." default="jar">
 
   <property file="build.properties" />
 
   <!-- Name of the plugin -->
-  <property name="plugin.name" value="gateplugin-Lemmatizer"/>
+  <property name="plugin.name" value="gateplugin-dict-lemmatizer"/>
 
   <!-- Make environment variables available -->
   <property environment="env" />

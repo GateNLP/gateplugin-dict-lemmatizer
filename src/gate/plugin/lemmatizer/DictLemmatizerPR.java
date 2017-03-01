@@ -41,10 +41,10 @@ import java.util.zip.GZIPInputStream;
  * @author Johann Petrak <johann.petrak@gmail.com>
  * @author Achmet Aker 
  */
-@CreoleResource(name = "Lemmatizer",
-        helpURL = "https://github.com/GateNLP/gateplugin-Lemmatizer/wiki/Lemmatizer",
+@CreoleResource(name = "DictLemmatizer",
+        helpURL = "https://github.com/GateNLP/gateplugin-dict-lemmatizer/wiki/Lemmatizer",
         comment = "Find the lemmata of words.")
-public class LemmatizerPR  extends AbstractDocumentProcessor {
+public class DictLemmatizerPR  extends AbstractDocumentProcessor {
 
   private static final long serialVersionUID = 1L;
   
