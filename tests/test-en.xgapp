@@ -118,8 +118,8 @@
                 </entry>
               </localMap>
             </runtimeParams>
-            <resourceType>gate.plugin.lemmatizer.LemmatizerPR</resourceType>
-            <resourceName>Lemmatizer:en</resourceName>
+            <resourceType>gate.plugin.lemmatizer.DictLemmatizerPR</resourceType>
+            <resourceName>DictLemmatizer:en</resourceName>
             <initParams class="gate.util.persistence.MapPersistence">
               <mapType>gate.util.SimpleFeatureMapImpl</mapType>
               <localMap/>

@@ -413,14 +413,14 @@ public class DictLemmatizerPR  extends AbstractDocumentProcessor {
         partDic = emptyDictionary();
       } else {
         System.err.println("Lemmatizer: loading dictionaries for "+languageCode);
-        adjDic = loadDictionary(new File(dictDir,"adjDic.txt.gz"));
-        adpDic = loadDictionary(new File(dictDir, "adpDic.txt.gz"));
-        advDic = loadDictionary(new File(dictDir,"advDic.txt.gz"));
-        detDic = loadDictionary(new File(dictDir,"detDic.txt.gz"));
-        nounDic = loadDictionary(new File(dictDir,"nounDic.txt.gz"));
-        partDic = loadDictionary(new File(dictDir,"partDic.txt.gz"));
-        pronDic = loadDictionary(new File(dictDir,"pronDic.txt.gz"));
-        verbDic = loadDictionary(new File(dictDir,"verbDic.txt.gz"));
+        adjDic = loadDictionary(new File(dictDir,"ADJ-Dict.txt.gz"));
+        adpDic = loadDictionary(new File(dictDir, "ADP-Dict.txt.gz"));
+        advDic = loadDictionary(new File(dictDir,"ADV-Dict.txt.gz"));
+        detDic = loadDictionary(new File(dictDir,"DET-Dict.txt.gz"));
+        nounDic = loadDictionary(new File(dictDir,"NOUN-Dict.txt.gz"));
+        partDic = loadDictionary(new File(dictDir,"PART-Dict.txt.gz"));
+        pronDic = loadDictionary(new File(dictDir,"PRON-Dict.txt.gz"));
+        verbDic = loadDictionary(new File(dictDir,"VERB-Dict.txt.gz"));
         System.err.println("Lemmatizer: dictionaries loaded");
       }
       loadedDicts = languageCode;
