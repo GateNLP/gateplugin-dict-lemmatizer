@@ -153,6 +153,7 @@ public class DictLemmatizerPR  extends AbstractDocumentProcessor {
   Map<String, String> verbDic;
   Map<String, String> detDic;
   Map<String, String> pronDic;
+  Map<String, String> partDic;
   Map<String, String> adpDic;
   
   String textFeatureToUse = "";
@@ -292,7 +293,12 @@ public class DictLemmatizerPR  extends AbstractDocumentProcessor {
         lemmatizeStatus = "NOUN";
         nrListLookups += 1;
         if(lemma==null) nrListLookupsNotFound += 1;
-      // MISSING: NUM, PART
+      // MISSING: NUM
+      } else if ("PART".equalsIgnoreCase(pos)) {
+        lemma = partDic.get(tokenString.toLowerCase());
+        lemmatizeStatus = "PART";
+        nrListLookups += 1;
+        if(lemma==null) nrListLookupsNotFound += 1;
       } else if ("PRON".equalsIgnoreCase(pos)) {
         lemma = pronDic.get(tokenString.toLowerCase());
         lemmatizeStatus = "PRON";
@@ -403,7 +409,8 @@ public class DictLemmatizerPR  extends AbstractDocumentProcessor {
         detDic = emptyDictionary();
         nounDic = emptyDictionary();
         pronDic = emptyDictionary();
-        verbDic = emptyDictionary();        
+        verbDic = emptyDictionary();     
+        partDic = emptyDictionary();
       } else {
         System.err.println("Lemmatizer: loading dictionaries for "+languageCode);
         adjDic = loadDictionary(new File(dictDir,"adjDic.txt.gz"));
@@ -411,7 +418,8 @@ public class DictLemmatizerPR  extends AbstractDocumentProcessor {
         advDic = loadDictionary(new File(dictDir,"advDic.txt.gz"));
         detDic = loadDictionary(new File(dictDir,"detDic.txt.gz"));
         nounDic = loadDictionary(new File(dictDir,"nounDic.txt.gz"));
-        pronDic = loadDictionary(new File(dictDir,"pronounDic.txt.gz"));
+        partDic = loadDictionary(new File(dictDir,"partDic.txt.gz"));
+        pronDic = loadDictionary(new File(dictDir,"pronDic.txt.gz"));
         verbDic = loadDictionary(new File(dictDir,"verbDic.txt.gz"));
         System.err.println("Lemmatizer: dictionaries loaded");
       }
